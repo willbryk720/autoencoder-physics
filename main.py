@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import random
 from PIL import Image
+from PIL import ImageOps 
 
 IMAGE_WIDTH, IMAGE_HEIGHT = 500, 500
 
@@ -8,7 +9,7 @@ dt = .01
 G = 1000
 EARTH_ACCEL = -9.8
 
-NUM_IMAGES = 20
+NUM_IMAGES = 5000
 NUM_TRAJECTORIES_PER_IMAGE = 1
 
 def getXYAccel(x, y, obj):
@@ -35,7 +36,7 @@ def getTrajectory(x, y, vx, vy, objects):
             x_accel += x_acc
             y_accel += y_acc
         
-        print x_accel, y_accel, EARTH_ACCEL
+        # print x_accel, y_accel, EARTH_ACCEL
 
     
         # Update velocities with accelerations from objects
@@ -72,7 +73,7 @@ for iter in range(NUM_IMAGES):
         vx = random.random()*50 + 20
         vy = random.random()*100 + 30
         traj_points = getTrajectory(x, y, vx, vy, objects)
-        line = plt.Polygon(traj_points, closed=None, fill=None, edgecolor='r', linewidth=4)
+        line = plt.Polygon(traj_points, closed=None, fill=None, linewidth=6)
         plt.gca().add_line(line)
 
     # plt.axes()
