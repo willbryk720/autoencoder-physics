@@ -3,9 +3,9 @@ import random
 from PIL import Image
 from PIL import ImageOps 
 import time
+import pandas as pd 
 
-
-NUM_IMAGES = 20000
+NUM_IMAGES = 10000
 NUM_TRAJECTORIES_PER_IMAGE = 1
 
 IMAGE_WIDTH, IMAGE_HEIGHT = 500, 500
@@ -26,7 +26,18 @@ def getXYAccel(x, y, obj):
     return x_accel, y_accel
 
 
-def getTrajectory(x, y, vx, vy, objects):
+def getInitialParameters():
+    x = 0
+    y = 50 + random.random()*(IMAGE_HEIGHT - 50)
+    vx = random.random()*50 + 20
+    # vy = random.random()*100 + 30
+    vy = 0
+    return (x,y,vx,vy)
+    
+
+def getTrajectory(initial_parameters, objects):
+    x, y, vx, vy = initial_parameters
+
     trajectory = []
     t = 0
     while x >= 0 and x <= IMAGE_WIDTH and y >= 0 and y <= IMAGE_HEIGHT:
@@ -63,6 +74,8 @@ planet2 = {"x": 400, "y": 200, "m": 100}
 # objects = [planet1, planet2]
 objects = []
 
+initial_parameters_for_csv = []
+
 tic = time.clock()
 for iter in range(NUM_IMAGES):
     # Draw objects
@@ -70,20 +83,16 @@ for iter in range(NUM_IMAGES):
         circle = plt.Circle((obj["x"], obj["y"]), radius=obj["m"] * .1, fc='y')
         plt.gca().add_patch(circle)
 
-    for i in range(NUM_TRAJECTORIES_PER_IMAGE):
-        x = 0
-        y = 0
-        vx = random.random()*50 + 20
-        vy = random.random()*100 + 30
-        traj_points = getTrajectory(x, y, vx, vy, objects)
-        line = plt.Polygon(traj_points, closed=None, fill=None, linewidth=10)
-        plt.gca().add_line(line)
+    # initialize parameters
+    initial_parameters = getInitialParameters()
+    initial_parameters_for_csv.append(initial_parameters)
+    traj_points = getTrajectory(initial_parameters, objects)
+    line = plt.Polygon(traj_points, closed=None, fill=None, linewidth=10)
+    plt.gca().add_line(line)
 
     if iter % 100 == 0:
         toc = time.clock()
         print ("Created " + str(iter) + " of " + str(NUM_IMAGES) + ". Its been " + "{0:.2f}".format(toc - tic) + " seconds.")
-
-
 
 
     plt.axis('off')
@@ -91,8 +100,8 @@ for iter in range(NUM_IMAGES):
     plt.xlim(0, IMAGE_WIDTH)
     plt.ylim(0, IMAGE_HEIGHT)
 
-
-    image_file_name = "images/vx_vy/example_" + str(iter) + ".png"
+    folder_name = "vx_h"
+    image_file_name = folder_name + "/images/example_" + str(iter) + ".png"
     plt.savefig(image_file_name, bbox_inches='tight', pad_inches=0)
  
     plt.gcf().clear()
@@ -102,3 +111,7 @@ for iter in range(NUM_IMAGES):
     img = Image.open(image_file_name)
     img = img.resize((28, 28), Image.ANTIALIAS)
     img.save(image_file_name, format='PNG')
+
+initial_parameters_for_csv = [["{0:.2f}".format(el) for el in row] for row in initial_parameters_for_csv]
+df = pd.DataFrame(initial_parameters_for_csv)
+df.to_csv(folder_name +"/initial_parameters.csv", header=None, index=None)
