@@ -2,15 +2,17 @@ import matplotlib.pyplot as plt
 import random
 from PIL import Image
 from PIL import ImageOps 
+import time
+
+
+NUM_IMAGES = 20000
+NUM_TRAJECTORIES_PER_IMAGE = 1
 
 IMAGE_WIDTH, IMAGE_HEIGHT = 500, 500
 
 dt = .01
 G = 1000
 EARTH_ACCEL = -9.8
-
-NUM_IMAGES = 5000
-NUM_TRAJECTORIES_PER_IMAGE = 1
 
 def getXYAccel(x, y, obj):
     dist = ((obj["x"] - x)**2 + (obj["y"] - y)**2)**.5
@@ -61,6 +63,7 @@ planet2 = {"x": 400, "y": 200, "m": 100}
 # objects = [planet1, planet2]
 objects = []
 
+tic = time.clock()
 for iter in range(NUM_IMAGES):
     # Draw objects
     for obj in objects:
@@ -73,24 +76,29 @@ for iter in range(NUM_IMAGES):
         vx = random.random()*50 + 20
         vy = random.random()*100 + 30
         traj_points = getTrajectory(x, y, vx, vy, objects)
-        line = plt.Polygon(traj_points, closed=None, fill=None, linewidth=6)
+        line = plt.Polygon(traj_points, closed=None, fill=None, linewidth=10)
         plt.gca().add_line(line)
 
-    # plt.axes()
-    # plt.axis('scaled')
+    if iter % 100 == 0:
+        toc = time.clock()
+        print ("Created " + str(iter) + " of " + str(NUM_IMAGES) + ". Its been " + "{0:.2f}".format(toc - tic) + " seconds.")
+
+
+
+
     plt.axis('off')
+    plt.axis('scaled')
     plt.xlim(0, IMAGE_WIDTH)
     plt.ylim(0, IMAGE_HEIGHT)
-    # plt.figure(figsize=(800/my_dpi, 800/my_dpi))
+
 
     image_file_name = "images/vx_vy/example_" + str(iter) + ".png"
-    plt.savefig(image_file_name)
-
-    # plt.show()
+    plt.savefig(image_file_name, bbox_inches='tight', pad_inches=0)
+ 
     plt.gcf().clear()
         
     
-    # Resize images to 28x28
+    #Resize images to 28x28
     img = Image.open(image_file_name)
     img = img.resize((28, 28), Image.ANTIALIAS)
     img.save(image_file_name, format='PNG')
